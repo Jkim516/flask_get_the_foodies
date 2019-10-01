@@ -1,0 +1,20 @@
+{
+    "install": "pip3 install --user -r pip-requirements.txt",
+    "start": "PYTHONUNBUFFERED=true python3 app.py",
+    "watch": {
+      "ignore": [
+        "\\.pyc$"
+      ],
+      "install": {
+        "include": [
+          "pip-requirements.txt"
+        ]
+      },
+      "restart": {
+        "include": [
+          "\\.py$"
+        ]
+      },
+      "throttle": 1000
+    }
+  }
