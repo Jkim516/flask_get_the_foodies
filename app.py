@@ -1,4 +1,5 @@
 from waitress import serve
+
 from flask import Flask, render_template, request
 
 app = Flask(__name__, static_url_path="/static")
@@ -28,3 +29,4 @@ def get_results():
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=5000)
+
