@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Get the Foodies!</title>
+    <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+</head>
+<body>
+    {{restaurant_name}}
+    <br>
+    <img src="{{ url_for('static', filename='images/shap_plot.png') }}" height="700" width="1000">
+    <br>
+
+    <a href="/">Try another restaurant</a>
+</body>
+</html>
