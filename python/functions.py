@@ -16,6 +16,7 @@ from time import sleep
 import matplotlib.pyplot as plt
 
 import sklearn
+from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -25,34 +26,75 @@ import shap
 
 shap.initjs()
 
-def my_whole_project(url):
+def full_shap_eval(url, ind=0):
+    
+    """The function returns the summary plot of the model along with f1 score and confusion matrix."""
+    
     url_list = get_urls(url)
     df = get_df(url_list)
-    shap_graph = get_shap(df)
-    f1_score = get_scr(df)
-    return shap_graph, f1_score
+    f1_score = get_f1scr(df)
+    draw = force_plot(df, ind)
+    txt = force_plot_text(df, ind)
 
-def df_indi(url):
-    url_list = get_urls(url)
-    df = get_df(url_list)
-    return df
+    return f1_score, txt, draw
 
-def f1_cm(url):
+def get_pos_neg_words_df(url):
+    
+    """The function returns the dataframe includes both 
+    'Words with Positive Impact on Ratings' and 'Words with Negative Impact on Ratings.'"""
+    
     url_list = get_urls(url)
     df = get_df(url_list)
-    f1_score = get_scr(df)
+    words = show_aud(df)
+    
+    return words
+
+def f1_ind(url):
+    
+    """The function returns f1 Score of the model"""
+    
+    url_list = get_urls(url)
+    df = get_df(url_list)
+    f1_score = get_f1scr(df)
     return f1_score
+
+def cm_ind(url):
+    
+    """The function returns confusion matrix of the model"""
+    
+    url_list = get_urls(url)
+    df = get_df(url_list)
+    cm = get_cm(df)
+    return cm
+
+def force_plot_ind(url, ind=0):
+    
+    """graph the force plot for the review"""
+    
+    url_list = get_urls(url)
+    df = get_df(url_list)
+    draw = force_plot(df, ind)
+    return draw
+
+def force_text_ind(url, ind=0):
+    
+    """graph the force plot for the review"""
+    
+    url_list = get_urls(url)
+    df = get_df(url_list)
+    txt = force_plot_text(df, ind)
+    return txt
 
 def get_urls(url):
     
     """The function generates the most recent 10 page of reviews on Yelp for the individual restaurant."""
-    browser = Chrome()
+    
     url_list = []
     
     link = url+'?&sort_by=date_desc' #for the first page of the latest 20 reviews/ratings
     url_list.append(link)
     
-    for num in range(20, 200, 20): #for the 2nd to 10th page of the latest reviews/ratings
+    for num in range(20, 40, 20): #for the 2nd to 10th page of the latest reviews/ratings
         links = url+'?'+'&start='+str(num)+'&sort_by=date_desc'
         url_list.append(links)
         
@@ -63,6 +105,8 @@ def get_df(url_list):
     """The output of the function is a dataframe that includes the full texts and ratings for the
        latest 200 customer reviews on Yelp for the particular restaurant."""
     
+    browser = Chrome()
+
     ratings = []
     reviews = []
     for url in url_list:
@@ -110,17 +154,18 @@ def get_df(url_list):
     
     return res_df 
 
-def get_shap(res_df):     
+def show_aud(df):
     
-    """The model is trained with the latest 10 page of reviews on Yelp."""
+    """the function returns two list of words that are discussed on Yelp about the particular restaurant."""
     
     #train test split
-    features = res_df['text']
-    target = res_df['pos_neg']
+    features = df['text']
+    target = df['pos_neg']
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    vectorizer = TfidfVectorizer(stop_words='english')
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #vec for SHAP
     features_train_transformed = vectorizer.fit_transform(X_train)
@@ -135,16 +180,27 @@ def get_shap(res_df):
     shap_values = explainer.shap_values(features_test_transformed)
     X_test_array = features_test_transformed.toarray() 
     
-    fig, ax = plt.subplots(figsize=((14, 7)))
-    shap.summary_plot(shap_values, X_test_array, feature_names=vectorizer.get_feature_names(), show=False, auto_size_plot=False)
-#     fig.savefig("/Users/Erica/flatiron/flask_app/capstone-flask-app-template-seattle-ds-062419/static/images/shap_plot.png", pad_inches=.1)
+    #build dataframe for illustration 
+    res_sv_df = pd.DataFrame(shap_values, columns=vectorizer.get_feature_names())
     
-    # Summarize the effect of all the features                         
-    return fig.savefig("/static/images/shap_plot.png", pad_inches=.1)
+    #present max/min SHAP values for 
+    neg_df = res_sv_df.min(axis=0)
+    neg_sort = neg_df.sort_values().head(15)
+    neg_list = list(dict(neg_sort).keys())
+    neg_df_final = pd.DataFrame(neg_list, index=range(1,16), columns=['Words with Negative Impact on Ratings'])
+    
+    pos_df = res_sv_df.max(axis=0)
+    pos_sort = pos_df.sort_values(ascending=False).head(15)
+    pos_list = list(dict(pos_sort).keys())
+    pos_df_final = pd.DataFrame(pos_list, index=range(1,16), columns=['Words with Positive Impact on Ratings'])
+    
+    combo_df = pd.concat([pos_df_final, neg_df_final], axis=1)
+    
+    return combo_df
 
-def get_scr(res_df):
+def get_f1scr(res_df):
 
-    """The output shows the F1 score and confusion matrix of the model."""
+    """The output shows the rounded F1 score."""
     
     #train test split
     features = res_df['text']
@@ -152,7 +208,8 @@ def get_scr(res_df):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    vectorizer = TfidfVectorizer(stop_words='english')
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #get confusion matrix and f1 score
     classifier = LogisticRegression(solver='lbfgs')
@@ -161,10 +218,79 @@ def get_scr(res_df):
     predicted_labels = pipe.predict(X_test)
         
     f1 = f1_score(y_test, predicted_labels)
+    f1_scr = 'F1 Score: {}'.format(round(f1,3))
+    
+    return f1_scr
+
+def get_cm(res_df):
+
+    """The output shows the dataframe of the confusion matrix."""
+    
+    #train test split
+    features = res_df['text']
+    target = res_df['pos_neg']
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
+    
+    #vec
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    vectorizer = TfidfVectorizer(stop_words=my_stop_words)
+    
+    #get confusion matrix and f1 score
+    classifier = LogisticRegression(solver='lbfgs')
+    pipe = Pipeline([('vectorizer', vectorizer), ('classifier', classifier)])
+    pipe.fit(X_train, y_train)
+    predicted_labels = pipe.predict(X_test)
+        
     cm = confusion_matrix(y_test, predicted_labels)
     chart = pd.DataFrame(cm, 
                          index = ['Actual Negative', 'Actual Positive'], 
                          columns=['Predicted Negative', 'Predicted Positive'])
 
-    return ('F1', f1), chart
+    return chart
 
+def force_plot(res_df, ind=0):
+    
+    #train test splits
+    features = res_df['text']
+    target = res_df['pos_neg']
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
+    
+    #vec
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    vectorizer = TfidfVectorizer(stop_words=my_stop_words)
+    
+    #vec for SHAP
+    features_train_transformed = vectorizer.fit_transform(X_train)
+    features_test_transformed = vectorizer.transform(X_test)    
+    
+    # Fit a linear logistic regression model
+    model = LogisticRegression(solver='lbfgs')
+    model.fit(features_train_transformed, y_train)
+    
+    # Explain the linear model
+    explainer = shap.LinearExplainer(model, features_train_transformed, feature_dependence="independent")
+    shap_values = explainer.shap_values(features_test_transformed)
+    X_test_array = features_test_transformed.toarray() 
+    
+    #draw force plot
+    fig = plt.figure()
+    force=shap.force_plot(explainer.expected_value, shap_values[ind,:], X_test_array[ind,:], feature_names=vectorizer.get_feature_names())
+    fig.savefig('static/images/shap_plot.png', pad_inches=.1)
+    
+    return force
+
+def force_plot_text(res_df, ind=0):
+    
+    """a graph to present the force plot for a review."""
+    
+    #train test split
+    features = res_df['text']
+    target = res_df['pos_neg']
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
+       
+    #show text
+    for ind in y_test.values: 
+        if y_test.values[ind] == 1:
+            return('Positive Review:', X_test.values[ind])
+        else:
+            return('Negative Review:', X_test.values[ind])

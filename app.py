@@ -1,6 +1,7 @@
 from waitress import serve
 
 from flask import Flask, render_template, request
+from python.functions import  get_pos_neg_words_df, full_shap_eval
 
 app = Flask(__name__, static_url_path="/static")
 
@@ -17,8 +18,15 @@ def get_results():
     # user_number_doubled = user_number * 2
 
     url = data["yelp_url"] 
+    words = get_pos_neg_words_df(url)
+    table = words.to_html()
+    all_f = full_shap_eval(url)
+    #f1_score = f1_ind(url)
+    #text = force_text_ind(url)
+    #force_plot = force_plot_ind(url)
 
-    return render_template("results.html", url=url, path='/static/images/shap_plot.png')
+    #return render_template("results.html", url=url, path='/static/images/shap_plot.png')
+    return render_template('results.html', table=table, all_f=all_f)
 
 #@app.route('/test')
 #def show_plot():
