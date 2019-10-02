@@ -1,3 +1,4 @@
+from waitress import serve
 from flask import Flask, render_template, request
 
 app = Flask(__name__, static_url_path="/static")
@@ -24,3 +25,6 @@ def get_results():
 #  plt.plot(lnprice)
 #  plt.savefig('/static/images/shap_plot.png')
 # return render_template('results.html', name = 'new_plot', url ='/static/images/shap_plot.png
+
+if __name__ == "__main__":
+    serve(app, host='0.0.0.0', port=5000)
