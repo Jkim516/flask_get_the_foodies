@@ -13,8 +13,6 @@ import requests
 import time
 from time import sleep
 
-import matplotlib.pyplot as plt
-
 import sklearn
 from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import TfidfVectorizer
