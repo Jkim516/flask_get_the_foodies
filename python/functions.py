@@ -156,7 +156,7 @@ def show_aud(df):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool', 'best', 'like'])
     vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #vec for SHAP
