@@ -1,7 +1,9 @@
 from waitress import serve
-
+import matplotlib
+matplotlib.use('Agg')
 from flask import Flask, render_template, request
-from python.functions import  get_pos_neg_words_df, full_shap_eval
+import matplotlib.pyplot as plt
+from python.functions import  get_pos_neg_words_df, f1_ind
 
 app = Flask(__name__, static_url_path="/static")
 
@@ -20,20 +22,22 @@ def get_results():
     url = data["yelp_url"] 
     words = get_pos_neg_words_df(url)
     table = words.to_html()
-    all_f = full_shap_eval(url)
+    f1 = f1_ind(url)
+
+    #show_plot(url)
     #f1_score = f1_ind(url)
     #text = force_text_ind(url)
     #force_plot = force_plot_ind(url)
 
     #return render_template("results.html", url=url, path='/static/images/shap_plot.png')
-    return render_template('results.html', table=table, all_f=all_f)
+    return render_template('results.html', table=table, f1=f1)
 
 #@app.route('/test')
-#def show_plot():
-#  lnprice=np.log(price)
-#  plt.plot(lnprice)
-#  plt.savefig('/static/images/shap_plot.png')
-# return render_template('results.html', name = 'new_plot', url ='/static/images/shap_plot.png
+# def show_plot(url):
+    #draw=force_plot_ind(url)
+    # plt.plot(draw)
+    #draw.savefig('static/images/shap_plot1.png')
+    # return render_template('results.html', name = 'review example', url ='static/images/shap_plot1.png')
 
 if __name__ == "__main__":
     serve(app, host='0.0.0.0', port=5000)

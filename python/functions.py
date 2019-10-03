@@ -33,10 +33,10 @@ def full_shap_eval(url, ind=0):
     url_list = get_urls(url)
     df = get_df(url_list)
     f1_score = get_f1scr(df)
-    draw = force_plot(df, ind)
+    #draw = force_plot(df, ind)
     txt = force_plot_text(df, ind)
 
-    return f1_score, txt, draw
+    return f1_score, txt
 
 def get_pos_neg_words_df(url):
     
@@ -58,14 +58,6 @@ def f1_ind(url):
     f1_score = get_f1scr(df)
     return f1_score
 
-def cm_ind(url):
-    
-    """The function returns confusion matrix of the model"""
-    
-    url_list = get_urls(url)
-    df = get_df(url_list)
-    cm = get_cm(df)
-    return cm
 
 def force_plot_ind(url, ind=0):
     
@@ -94,7 +86,7 @@ def get_urls(url):
     link = url+'?&sort_by=date_desc' #for the first page of the latest 20 reviews/ratings
     url_list.append(link)
     
-    for num in range(20, 40, 20): #for the 2nd to 10th page of the latest reviews/ratings
+    for num in range(20, 60, 20): #for the 2nd to 10th page of the latest reviews/ratings
         links = url+'?'+'&start='+str(num)+'&sort_by=date_desc'
         url_list.append(links)
         
@@ -273,10 +265,11 @@ def force_plot(res_df, ind=0):
     X_test_array = features_test_transformed.toarray() 
     
     #draw force plot
-    fig = plt.figure()
-    force=shap.force_plot(explainer.expected_value, shap_values[ind,:], X_test_array[ind,:], feature_names=vectorizer.get_feature_names())
-    fig.savefig('static/images/shap_plot.png', pad_inches=.1)
-    
+    #fig = plt.figure()
+    force = shap.force_plot(explainer.expected_value, shap_values[ind,:], X_test_array[ind,:], feature_names=vectorizer.get_feature_names(), show=False, matplotlib=True,figsize=(100, 50))
+    #fig.savefig('/static/images/shap_plot.png', pad_inches=.1)
+    #print("force is " + str(type(force)))
+
     return force
 
 def force_plot_text(res_df, ind=0):
