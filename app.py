@@ -1,9 +1,9 @@
 from waitress import serve
 
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 from flask import Flask, render_template, request
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from python.functions import  get_pos_neg_words_df, f1_ind
 
 app = Flask(__name__, static_url_path="/static")

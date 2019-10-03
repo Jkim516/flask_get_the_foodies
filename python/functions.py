@@ -12,6 +12,7 @@ import requests
 
 import time
 from time import sleep
+import matplotlib.pyplot as plt
 
 import sklearn
 from sklearn.feature_extraction import text
@@ -135,7 +136,7 @@ def get_df(url_list):
     res_df = pd.DataFrame(df)
     
     #group ratings >= 4 as positive ratings and others as negative ratings 
-    def ratings(rf):
+    def ratings_ohe(rf):
         if rf['rating'] >= 4:
             return 1
         else:
