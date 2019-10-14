@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 from flask import Flask, render_template, request
 import matplotlib.pyplot as plt
-from python.functions import  get_pos_neg_words_df, f1_ind
+from python.functions import  get_pos_neg_words_df, f1_ind, full_df, get_f1scr, show_aud
 
 app = Flask(__name__, static_url_path="/static")
 
@@ -21,9 +21,10 @@ def get_results():
     # user_number_doubled = user_number * 2
 
     url = data["yelp_url"] 
-    words = get_pos_neg_words_df(url)
+    df = full_df(url)
+    words = show_aud(df)
     table = words.to_html()
-    f1 = f1_ind(url)
+    f1 = get_f1scr(df)
 
     #show_plot(url)
     #f1_score = f1_ind(url)

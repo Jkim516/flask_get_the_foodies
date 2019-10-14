@@ -37,6 +37,15 @@ def full_shap_eval(url, ind=0):
 
     return f1_score, txt
 
+def full_df(url):
+    
+    """The function returns the summary plot of the model along with f1 score and confusion matrix."""
+    
+    url_list = get_urls(url)
+    df = get_df(url_list)
+
+    return df
+
 def get_pos_neg_words_df(url):
     
     """The function returns the dataframe includes both 
@@ -85,7 +94,7 @@ def get_urls(url):
     link = url+'?&sort_by=date_desc' #for the first page of the latest 20 reviews/ratings
     url_list.append(link)
     
-    for num in range(20, 60, 20): #for the 2nd to 10th page of the latest reviews/ratings
+    for num in range(20, 140, 20): #for the 2nd to 10th page of the latest reviews/ratings
         links = url+'?'+'&start='+str(num)+'&sort_by=date_desc'
         url_list.append(links)
         
@@ -141,7 +150,7 @@ def get_df(url_list):
             return 1
         else:
             return 0
-    res_df['pos_neg'] = res_df.apply(ratings, axis=1)
+    res_df['pos_neg'] = res_df.apply(ratings_ohe, axis=1)
     
     return res_df 
 
@@ -155,7 +164,7 @@ def show_aud(df):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool', 'best', 'like'])
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','wasn','don', 'didn','oh','ve','definitely','absolutely','cool', 'best', 'like'])
     vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #vec for SHAP
@@ -199,7 +208,7 @@ def get_f1scr(res_df):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','wasn', 'don', 'didn','oh','ve','definitely','absolutely','cool'])
     vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #get confusion matrix and f1 score
@@ -223,7 +232,7 @@ def get_cm(res_df):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'wasn', 'didn','oh','ve','definitely','absolutely','cool'])
     vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #get confusion matrix and f1 score
@@ -247,7 +256,7 @@ def force_plot(res_df, ind=0):
     X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.25, random_state=42)
     
     #vec
-    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'didn','oh','ve','definitely','absolutely','cool'])
+    my_stop_words = text.ENGLISH_STOP_WORDS.union(['highly','amazing','great','did','make','wa','don', 'wasn', 'didn','oh','ve','definitely','absolutely','cool'])
     vectorizer = TfidfVectorizer(stop_words=my_stop_words)
     
     #vec for SHAP
