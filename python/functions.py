@@ -3,6 +3,7 @@ import numpy as np
 import random
 
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -104,8 +105,10 @@ def get_df(url_list):
     
     """The output of the function is a dataframe that includes the full texts and ratings for the
        latest 200 customer reviews on Yelp for the particular restaurant."""
-    
-    browser = Chrome()
+    options = Options()
+    options.headless = True
+    browser = Chrome(chrome_options=options)
+    #browser = Chrome()
 
     ratings = []
     reviews = []
